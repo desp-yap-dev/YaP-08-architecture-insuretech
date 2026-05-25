@@ -1,0 +1,1 @@
+# YaP-08-architecture-insuretech
