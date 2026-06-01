@@ -31,6 +31,14 @@
 7. Также на схему добавил CDN, это позволит улучшить метрики по скорости отображения страниц, в т.ч. в разных регионах
 8. Также на уровне приложения можно завести API gateway с реализацией паттерна Rate limit (исключить случаи, когда один партнер "забивает" весь канал).
 
+## Задание 2. Динамическое масштабирование контейнеров
+
+Добавить ссылку
+
+## Задание 3. Переход на Event-Driven архитектуру
+
+Добавить ссылку
+
 ## Задание 4. Проектирование продажи ОСАГО
 
 Компания планирует вскоре запустить новый продукт: оформление ОСАГО онлайн. Пользовательский путь выглядит так: клиенту предлагается заполнить заявку с информацией о своём автомобиле, после этого сервис запрашивает у всех доступных страховых компаний предложения с условиями страхования под заявку клиента. Бизнесу важно, чтобы на экране пользователя предложения от каждой страховой компании отображались сразу, как только от неё пришёл ответ. Максимальное время ожидания решения от страховой компании — 60 секунд. 
@@ -82,3 +90,134 @@
 
 Для osago-aggregator предлагается использовать Timeout (ждем ответ максимум 60 сек) и Retry (API СК может быть недоступен в моменте, можем отправить повторный запрос). 
 Не требуется на этапе MVP, но в будущем можно также добавить Circuit Breaker для случая, если API недоступно. 
+
+## Задание 5. Проектирование GraphQL API
+
+Сейчас сервис предоставляет 3 ресурса:
+
+| REST | Endpoint | Сущность
+| - | - | - |
+| GET | /clients/{id} | Клиент
+| GET | /clients/{id}/documents |	Документы
+| GET | /clients/{id}/relatives	| Родственники
+
+Основной минус состоит в том, что для получения полных данных по клиенту придется выполнить минимум 3 запроса. 
+
+Из контракта можно выделить следующие сущности:
+```
+type Client {
+    id: ID!
+    name: String!
+    age: Int
+    documents: [Document!]!
+    relatives: [Relative!]!
+}
+
+type Document {
+    id: ID!
+    type: String!
+    number: String!
+    issueDate: String
+    expiryDate: String
+}
+
+type Relative {
+    id: ID!
+    relationType: String!
+    name: String!
+    age: Int
+}
+```
+
+Для замены всех REST-эндпоинтов достаточно одной точки входа:
+
+```
+type Query {
+    client(id: ID!): Client
+}
+```
+
+Итоговая GraphQL Schema:
+
+```
+type Query {
+    client(id: ID!): Client
+}
+
+type Client {
+    id: ID!
+    name: String!
+    age: Int
+
+    documents: [Document!]!
+    relatives: [Relative!]!
+}
+
+type Document {
+    id: ID!
+    type: String!
+    number: String!
+    issueDate: String
+    expiryDate: String
+}
+
+type Relative {
+    id: ID!
+    relationType: String!
+    name: String!
+    age: Int
+}
+```
+
+Примеры вызовов: 
+
+```
+Аналог GET /clients/{id}
+query {
+  client(id: "1") {
+    id
+    name
+    age
+  }
+}
+
+Аналог GET /clients/{id}/documents
+query {
+  client(id: "1") {
+    documents {
+      id
+      type
+      number
+    }
+  }
+}
+
+Аналог GET /clients/{id}/relatives
+query {
+  client(id: "1") {
+    relatives {
+      relationType
+      name
+      age
+    }
+  }
+}
+
+Запрос всех данных 
+query {
+  client(id: "1") {
+    id
+    name
+
+    documents {
+      type
+      number
+    }
+
+    relatives {
+      relationType
+      name
+    }
+  }
+}
+```
