@@ -141,4 +141,4 @@ type Query {
 }
 ```
 
-Итоговая GraphQL Schema: 
+[Итоговая GraphQL Schema](https://github.com/desp-yap-dev/YaP-08-architecture-insuretech/blob/feature/1/Task5/scheme.graphql)
