@@ -1,0 +1,78 @@
+type Query {
+    client(id: ID!): Client
+}
+
+type Client {
+    id: ID!
+    name: String!
+    age: Int
+
+    documents: [Document!]!
+    relatives: [Relative!]!
+}
+
+type Document {
+    id: ID!
+    type: String!
+    number: String!
+    issueDate: String
+    expiryDate: String
+}
+
+type Relative {
+    id: ID!
+    relationType: String!
+    name: String!
+    age: Int
+}
+
+# Примеры вызовов: 
+
+# Аналог GET /clients/{id}
+query {
+  client(id: "1") {
+    id
+    name
+    age
+  }
+}
+
+# Аналог GET /clients/{id}/documents
+query {
+  client(id: "1") {
+    documents {
+      id
+      type
+      number
+    }
+  }
+}
+
+# Аналог GET /clients/{id}/relatives
+query {
+  client(id: "1") {
+    relatives {
+      relationType
+      name
+      age
+    }
+  }
+}
+
+# Запрос всех данных 
+query {
+  client(id: "1") {
+    id
+    name
+
+    documents {
+      type
+      number
+    }
+
+    relatives {
+      relationType
+      name
+    }
+  }
+}
